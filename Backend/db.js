@@ -8,7 +8,7 @@ oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_PATH });
 
 // Configuración de conexión a Oracle
 const dbConfig = {
-  user: 'interfaz',
+  user: 'modulo',
   password: '123',
   connectString: 'localhost/XE' // ← Este valor puede variar, lo validaremos después
 };

@@ -1,5 +1,6 @@
 // server.js
 require('dotenv').config();
+const oracledb = require('oracledb');
 const { enviarCodigo } = require('./mailer');
 const verificacion = {};
 const express = require('express');
@@ -35,7 +36,9 @@ app.get('/api/tipoubica', async (req, res) => {
 app.get('/api/ubicaciones', async (req, res) => {
   try {
     const conn = await getConnection();
-    const result = await conn.execute(`SELECT * FROM "UBICACION"`);
+    const result = await conn.execute(`SELECT * FROM "UBICACION"`, [], {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    });
     res.json(result.rows);
     await conn.close();
   } catch (err) {

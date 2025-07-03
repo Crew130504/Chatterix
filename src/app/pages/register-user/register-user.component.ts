@@ -50,12 +50,12 @@ export class RegisterUserComponent implements OnInit {
 
   cargarUbicaciones(): void {
     this.userService.getUbicaciones().subscribe(data => {
-      this.todasUbicaciones = data.map((row: any) => ({
-        codUbica: +row[0],
-        ubicaSup: row[4] !== null ? +row[4] : null,
-        codTipoUbica: +row[2],
-        nomUbica: row[3]
-      }));
+    this.todasUbicaciones = data.map((row: any) => ({
+      codUbica: +row.CODUBICA,
+      ubicaSup: row.UBI_CODUBICA !== null ? +row.UBI_CODUBICA : null,
+      codTipoUbica: +row.CODTIPOUBICA,
+      nomUbica: row.NOMUBICA
+    }));
       this.ubicaciones[1] = this.todasUbicaciones.filter(u => u.codTipoUbica === 1);
     });
   }
