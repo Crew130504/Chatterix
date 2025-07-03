@@ -1,0 +1,58 @@
+<!-- Sección principal con bienvenida -->
+<div class="container-fluid px-4 pt-4 pb-0 dashboard-home">
+  <div class="row align-items-center gx-0">
+    <!-- Texto -->
+    <div class="col-lg-5 col-12 mb-3 mb-lg-0 text-center text-lg-start text-panel">
+      <div class="hero-panel">
+        <h1 class="welcome-title">Bienvenido a GeoUser</h1>
+        <p class="lead">
+          Gestiona y registra usuarios con ubicación geográfica precisa y verificación de correo electrónico.
+        </p>
+        <a class="btn register-btn mt-3 px-5" routerLink="/register-user">Comenzar Registro</a>
+      </div>
+    </div>
+
+    <!-- Imagen -->
+    <div class="col-lg-7 col-12 d-none d-lg-block">
+      <div class="image-wrapper">
+        <img
+          src="assets/images/undraw_map_cuix.svg"
+          alt="onboarding"
+          class="img-fluid onboarding-img"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔽 Botón "Ver más" centrado -->
+  <div class="text-center mt-4 see-more-wrapper">
+    <a href="#dashboard-cards" class="btn see-more-btn">Ver más ↓</a>
+  </div>
+</div>
+
+<!-- Espacio para que las tarjetas no se vean de inmediato -->
+<div style="height: 60px;"></div>
+
+<!-- Sección de tarjetas -->
+<div class="container dashboard-section" id="dashboard-cards">
+  <div class="row gy-4">
+    <div class="col-md-4 d-flex">
+      <div class="dashboard-card card-mint w-100">
+        <h5>Registra un Usuario</h5>
+        <p>Llena un formulario rápido con tus datos personales.</p>
+      </div>
+    </div>
+    <div class="col-md-4 d-flex">
+      <div class="dashboard-card card-moonstone w-100">
+        <h5>Elige Ubicación</h5>
+        <p>Selecciona país y ciudad desde la base de datos.</p>
+      </div>
+    </div>
+    <div class="col-md-4 d-flex">
+      <div class="dashboard-card card-brown w-100">
+        <h5>Valida tu Correo</h5>
+        <p>Verifica tu email y completa tu registro fácilmente.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,169 @@
+<!-- Fondo con gradiente igual al home -->
+<div class="register-page-wrapper">
+  <div class="container d-flex justify-content-center align-items-center h-100">
+    <div class="col-lg-8">
+      <div class="register-card p-4 p-md-5 shadow-sm rounded">
+        <h2 class="mb-4 text-center text-moonstone">Registro de Usuario</h2>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            <!-- Nombre -->
+            <div class="col-md-6">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" id="nombre" class="form-control" formControlName="nombre" placeholder="Ingresa tu nombre" />
+              <div *ngIf="registerForm.get('nombre')?.touched && registerForm.get('nombre')?.invalid" class="text-danger small">
+                El nombre es obligatorio y solo debe tener letras (máx. 25).
+              </div>
+            </div>
+
+            <!-- Apellido -->
+            <div class="col-md-6">
+              <label for="apellido" class="form-label">Apellido</label>
+              <input type="text" id="apellido" class="form-control" formControlName="apellido" placeholder="Ingresa tu apellido" />
+              <div *ngIf="registerForm.get('apellido')?.touched && registerForm.get('apellido')?.invalid" class="text-danger small">
+                El apellido es obligatorio y solo debe tener letras (máx. 25).
+              </div>
+            </div>
+
+            <!-- Usuario -->
+            <div class="col-md-6">
+              <label for="user" class="form-label">Usuario</label>
+              <input type="text" id="user" class="form-control" formControlName="user" placeholder="Máx. 6 caracteres" />
+              <div *ngIf="registerForm.get('user')?.touched && registerForm.get('user')?.invalid" class="text-danger small">
+                Usuario requerido (3-6 letras o números, sin símbolos).
+              </div>
+            </div>
+
+            <!-- Fecha de registro -->
+            <div class="col-md-6">
+              <label for="fechaRegistro" class="form-label">Fecha de Registro</label>
+              <input type="date" id="fechaRegistro" class="form-control" formControlName="fechaRegistro" />
+              <div *ngIf="registerForm.get('fechaRegistro')?.touched && registerForm.get('fechaRegistro')?.errors?.['fechaInvalida']" class="text-danger small">
+                La fecha debe estar entre 2000 y hoy.
+              </div>
+
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" id="email" class="form-control" formControlName="email" placeholder="ejemplo@email.com" />
+              <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" class="text-danger small">
+                Ingresa un correo válido.
+              </div>
+            </div>
+
+            <!-- Celular -->
+            <div class="col-md-6">
+              <label for="celular" class="form-label">Celular</label>
+              <input type="text" id="celular" class="form-control" formControlName="celular" placeholder="+57..." />
+              <div *ngIf="registerForm.get('celular')?.touched && registerForm.get('celular')?.invalid" class="text-danger small">
+                El celular debe contener entre 7 y 16 dígitos numéricos.
+              </div>
+            </div>
+
+            <!-- País -->
+            <div class="col-md-6">
+              <label for="pais" class="form-label">País</label>
+              <select id="pais" class="form-select" (change)="onSelectNivel(1, $event)">
+                <option value="">Seleccione país</option>
+                <option *ngFor="let item of ubicaciones[1]" [value]="item.codUbica">
+                  {{ item.nomUbica }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Departamento -->
+            <div class="col-md-6" *ngIf="ubicaciones[2]?.length">
+              <label for="depto" class="form-label">Departamento</label>
+              <select id="depto" class="form-select" (change)="onSelectNivel(2, $event)">
+                <option value="">Seleccione departamento</option>
+                <option *ngFor="let item of ubicaciones[2]" [value]="item.codUbica">
+                  {{ item.nomUbica }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Ciudad -->
+            <div class="col-md-6" *ngIf="ubicaciones[3]?.length">
+              <label for="ciudad" class="form-label">Ciudad</label>
+              <select id="ciudad" class="form-select" (change)="onSelectNivel(3, $event)">
+                <option value="">Seleccione ciudad</option>
+                <option *ngFor="let item of ubicaciones[3]" [value]="item.codUbica">
+                  {{ item.nomUbica }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Área -->
+            <div class="col-md-6" *ngIf="ubicaciones[4]?.length">
+              <label for="area" class="form-label">Área</label>
+              <select id="area" class="form-select" (change)="onSelectNivel(4, $event)">
+                <option value="">Seleccione área</option>
+                <option *ngFor="let item of ubicaciones[4]" [value]="item.codUbica">
+                  {{ item.nomUbica }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Provincia -->
+            <div class="col-md-6" *ngIf="ubicaciones[5]?.length">
+              <label for="provincia" class="form-label">Provincia</label>
+              <select id="provincia" class="form-select" formControlName="codUbica">
+                <option value="">Seleccione provincia</option>
+                <option *ngFor="let item of ubicaciones[5]" [value]="item.codUbica">
+                  {{ item.nomUbica }}
+                </option>
+              </select>
+              <div *ngIf="registerForm.get('codUbica')?.touched && registerForm.get('codUbica')?.invalid" class="text-danger small">
+                Selecciona una ubicación válida.
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón para enviar código -->
+          <div class="d-grid gap-2 mt-4">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              (click)="validarCorreo()"
+              [disabled]="correoValidado"
+            >
+              {{ correoValidado ? 'Correo Validado ✔' : 'Validar Correo' }}
+            </button>
+          </div>
+
+          <!-- Código de verificación -->
+          <div *ngIf="codigoEnviado && !correoValidado" class="row g-3 mt-2">
+            <div class="col-md-8">
+              <label for="codigo" class="form-label">Código de verificación</label>
+              <input
+                type="text"
+                id="codigo"
+                class="form-control"
+                formControlName="codigo"
+                placeholder="Ingresa el código enviado"
+              />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button type="button" class="btn btn-success w-100" (click)="verificarCodigo()">
+                Verificar Código
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón de registro -->
+          <div class="d-grid gap-2 mt-4">
+            <button
+              type="submit"
+              class="btn register-btn"
+              [disabled]="!registerForm.valid || !correoValidado"
+            >
+              Registrar Usuario
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

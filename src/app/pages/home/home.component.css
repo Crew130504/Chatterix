@@ -1,0 +1,175 @@
+/* Scroll suave general */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Sección de bienvenida */
+.dashboard-home {
+  animation: fadeIn 0.8s ease-in-out;
+  padding-bottom: 2rem;
+  background: linear-gradient(180deg, #86E895 0%, #ffffff 100%);
+}
+
+/* Panel blanco con sombra */
+.hero-panel {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Título */
+.welcome-title {
+  color: #21A3BB;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+/* Descripción */
+.lead {
+  color: #6A9790;
+  font-size: 1.2rem;
+}
+
+/* Botón principal */
+.register-btn {
+  background-color: #54C6A8;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.register-btn:hover {
+  background-color: #21A3BB;
+  transform: scale(1.05);
+}
+
+/* Botón "Ver más" */
+.see-more-btn {
+  background-color: transparent;
+  border: 2px solid #21A3BB;
+  color: #21A3BB;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.see-more-btn:hover {
+  background-color: #21A3BB;
+  color: #ffffff;
+}
+
+/* Centrado del contenedor del botón */
+.see-more-wrapper {
+  margin-top: 2rem;
+}
+
+/* Imagen ilustrativa */
+.onboarding-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 420px;
+  animation: floatShifted 3s ease-in-out infinite;
+}
+.image-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: -60px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .text-panel {
+    padding-left: 0;
+  }
+  .image-wrapper {
+    justify-content: center;
+    margin-right: 0;
+  }
+  .onboarding-img {
+    animation: float 3s ease-in-out infinite;
+  }
+}
+
+/* Sección de tarjetas */
+.dashboard-section {
+  padding: 3rem 0;
+}
+
+/* Tarjetas estilo dashboard */
+.dashboard-card {
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.dashboard-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Colores */
+.card-mint {
+  background-color: #54C6A8;
+}
+.card-moonstone {
+  background-color: #21A3BB;
+}
+.card-brown {
+  background-color: #917051;
+}
+
+/* Tipografía en tarjeta */
+.dashboard-card h5 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.dashboard-card p {
+  font-weight: 400;
+  font-size: 1rem;
+  color: #ffffffcc;
+  margin-bottom: 0;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes floatShifted {
+  0% {
+    transform: translate(-100px, 0);
+  }
+  50% {
+    transform: translate(-100px, -10px);
+  }
+  100% {
+    transform: translate(-100px, 0);
+  }
+}
