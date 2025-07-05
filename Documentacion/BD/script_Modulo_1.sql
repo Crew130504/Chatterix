@@ -92,8 +92,8 @@ create table CONTENIDO
    CONSMENSAJE          NUMBER(5,0)          not null,
    CONSECONTENIDO       NUMBER(2,0)          not null,
    IDTIPOCONTENIDO      VARCHAR2(2)          not null,
-   IDTIPOARCHIVO        VARCHAR2(2),
-   CONTENIDOIMAG        BLOB                 not null,
+   IDTIPOARCHIVO        VARCHAR2(3),
+   CONTENIDOIMAG        BLOB                 ,
    LOCALIZACONTENIDO    VARCHAR2(255),
    constraint PK_CONTENIDO primary key (CONSECUSER, USE_CONSECUSER, CONSMENSAJE, CONSECONTENIDO)
 );
@@ -127,11 +127,11 @@ create index TIPOARCHIVO_FK on CONTENIDO (
 create table GRUPO 
 (
    CODGRUPO             NUMBER(5,0)          not null,
-   CONSECUSER           VARCHAR2(5)          not null,
+   CONSECUSER           VARCHAR2(5)          ,
    GRU_CODGRUPO         NUMBER(5,0),
    NOMGRUPO             VARCHAR2(30)         not null,
    FECHAREGGRUPO        DATE                 not null,
-   IMAGGRUPO            BLOB                 not null,
+   IMAGGRUPO            BLOB                 ,
    constraint PK_GRUPO primary key (CODGRUPO)
 );
 
