@@ -51,5 +51,13 @@ export class UserService {
   existsUser(username: string): Observable<{ exists: boolean }> {
     return this.http.get<{ exists: boolean }>(`${this.apiUrl}/usuarios/existe/${username}`);
   }
-
+  // Iniciar sesion por correo
+  login(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, { email }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        const mensaje = error.error?.error || 'Error al iniciar sesión';
+        return throwError(() => new Error(mensaje));
+      })
+    );
+  } 
 }

@@ -1,0 +1,60 @@
+<div class="chat-container">
+  <!-- Cabecera -->
+  <div class="chat-header">
+    <h5>Bienvenido, {{ usuario.NOMBRE }} {{ usuario.APELLIDO }}</h5>
+    <span class="text-muted">{{ fechaActual | date:'fullDate' }} - {{ horaActual | date:'shortTime' }}</span>
+  </div>
+
+  <div class="chat-body">
+    <!-- Lista de chats (amigos + grupos juntos) -->
+    <div class="sidebar">
+      <h6>Conversaciones</h6>
+      <div *ngFor="let chat of conversacionesOrdenadas" class="chat-item" (click)="abrirConversacion(chat)">
+        <div class="chat-item-header">
+          <strong>{{ chat.nombre }}</strong>
+            <small class="text-muted">
+            {{ chat.ultimahora ? (chat.ultimahora | date:'shortTime') : '---' }}
+            </small>
+        </div>
+        <div class="chat-item-preview text-muted">
+          {{ chat.ultimomensaje || 'Sin mensajes aún' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat activo -->
+    <div class="chat-content">
+      <p *ngIf="!chatActivo">Selecciona una conversación</p>
+      <div *ngIf="chatActivo" class="chat-box">
+    <!-- Cabecera del chat -->
+    <div class="chat-header-active">
+        <strong>{{ chatActivo.nombre }}</strong>
+    </div>
+
+    <!-- Mensajes -->
+    <div class="chat-messages">
+        <div *ngFor="let msg of chatActivo.mensajes"
+     class="mensaje"
+     [class.propietario]="msg.propio">
+        <div *ngIf="chatActivo.tipo === 'grupo'" class="cabecera">
+          <small>{{ msg.emisor }}</small>
+        </div>
+
+        <div class="contenido">{{ msg.contenido }}</div>
+        <div class="meta">
+          <small>{{ msg.fecha | date:'shortTime' }}</small>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input para nuevo mensaje -->
+    <div class="chat-input">
+        <input [(ngModel)]="nuevoMensaje" class="form-control" placeholder="Escribe un mensaje..." (keydown.enter)="enviarMensaje()" />
+        <button class="btn btn-success" (click)="enviarMensaje()">Enviar</button>
+    </div>
+    </div>
+
+    </div>
+  </div>
+</div>

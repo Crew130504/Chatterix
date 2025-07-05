@@ -1,0 +1,35 @@
+<div class="register-page-wrapper">
+  <div class="container d-flex justify-content-center align-items-center h-100">
+    <div class="col-lg-6">
+      <div class="register-card p-4 p-md-5 shadow-sm rounded">
+        <h2 class="mb-4 text-center text-moonstone">Iniciar Sesión</h2>
+
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+          <div class="mb-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="ejemplo@correo.com"
+            />
+            <div *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid" class="text-danger small">
+              Ingresa un correo válido.
+            </div>
+          </div>
+
+          <div *ngIf="loginError" class="alert alert-danger py-2">
+            El correo ingresado no está registrado.
+          </div>
+
+          <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn register-btn" [disabled]="loginForm.invalid">
+              Ingresar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

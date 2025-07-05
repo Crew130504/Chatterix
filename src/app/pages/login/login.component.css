@@ -1,0 +1,117 @@
+/* Fondo general con gradiente */
+.register-page-wrapper {
+  min-height: 100vh;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  background: linear-gradient(180deg, #86E895 0%, #ffffff 100%);
+}
+
+/* Card principal */
+.register-card {
+  background-color: #ffffff;
+  border-radius: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Título */
+.text-moonstone {
+  color: #21A3BB;
+  font-weight: 700;
+}
+
+/* Inputs y selects */
+.form-control,
+.form-select {
+  border-radius: 0.75rem;
+  border: 1px solid #d0d0d0;
+  padding: 0.65rem 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #54C6A8;
+  box-shadow: 0 0 0 0.15rem rgba(84, 198, 168, 0.25);
+  outline: none;
+}
+
+/* Etiquetas */
+.form-label {
+  font-weight: 600;
+  color: #555;
+}
+
+/* Botón principal */
+.register-btn {
+  background-color: #54C6A8;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.register-btn:hover {
+  background-color: #21A3BB;
+  transform: scale(1.03);
+}
+
+/* Botón validar correo */
+.btn-outline-primary {
+  border-color: #21A3BB;
+  color: #21A3BB;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: #21A3BB;
+  color: #fff;
+}
+
+.btn-outline-primary[disabled] {
+  background-color: #86E895;
+  border-color: #86E895;
+  color: white;
+  font-weight: 600;
+  cursor: default;
+}
+
+/* Código de verificación */
+#codigo {
+  border-radius: 0.75rem;
+  padding: 0.65rem 1rem;
+}
+
+/* Alineación del botón verificar en pantallas pequeñas */
+@media (max-width: 768px) {
+  .col-md-4.d-flex.align-items-end {
+    margin-top: 1rem;
+  }
+}
+
+/* Espaciado entre secciones dinámicas */
+.row.mt-2 {
+  margin-top: 1.5rem !important;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .register-card {
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
