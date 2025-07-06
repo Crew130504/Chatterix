@@ -43,6 +43,7 @@
   display: flex;
   flex-direction: column;
 }
+
 .chat-item {
   padding: 0.75rem 0.5rem;
   border-bottom: 1px solid #e0e0e0;
@@ -65,6 +66,7 @@
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }
+
 .chat-box {
   display: flex;
   flex-direction: column;
@@ -86,25 +88,171 @@
   border-radius: 0.5rem;
 }
 
+.date-separator {
+  text-align: center;
+  margin: 16px 0 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+
+
+.cabecera small {
+  font-weight: 600;
+}
+/* Contenedor del input: blanco suave con sombra */
+.mensaje-input {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+/* Área de texto: fondo claro, borde acorde al tema */
+.mensaje-input textarea {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #b2dfdb;
+  border-radius: 6px;
+  background: #f9f9f9;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  height: 60px;
+  max-height: 60px;
+  overflow-y: auto;
+  resize: none;
+}
+
+.mensaje-input textarea:focus {
+  outline: none;
+  border-color: #4fc3a1;
+  box-shadow: 0 0 5px rgba(79,195,161,0.5);
+}
+
+.mensaje-input button {
+  margin-left: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #4fc3a1;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+
+.mensaje-input button:hover {
+  background-color: #43a58f;
+}
+
+.mensaje-input button:active {
+  transform: scale(0.97);
+}
+.mensaje-wrapper {
+  display: flex;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.mensaje-wrapper.derecha {
+  justify-content: flex-end;
+}
+
+.mensaje-wrapper.izquierda {
+  justify-content: flex-start;
+}
+
 .mensaje {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
   background-color: #e2e2e2;
-  max-width: 70%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 75%;
+  width: fit-content;
 }
 
 .mensaje.propietario {
   background-color: #c2f0c2;
-  margin-left: auto;
-  text-align: right;
 }
 
-.chat-input {
+.contenido-con-meta {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
 }
 
-.cabecera small {                
-  font-weight:600;
+.contenido-texto {
+  flex-grow: 1;
 }
+
+.meta {
+  font-size: 0.75rem;
+  color: #555;
+  white-space: nowrap;
+}
+
+.context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: opacity 0.2s ease;
+}
+
+.context-menu button {
+  background: none;
+  border: none;
+  color: #333;
+  padding: 5px 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background-color: #f0f0f0;
+}
+.respuesta-activa {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e0f7fa;
+  padding: 8px 12px;
+  border-left: 4px solid #00bcd4;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #00796b;
+}
+
+.btn-cancelar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #00796b;
+  padding: 2px 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cancelar:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.archivo-preview {
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 4px;
+}
+

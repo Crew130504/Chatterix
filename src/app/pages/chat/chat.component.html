@@ -1,20 +1,26 @@
 <div class="chat-container">
-  <!-- Cabecera -->
+  <!-- Cabecera general -->
   <div class="chat-header">
     <h5>Bienvenido, {{ usuario.NOMBRE }} {{ usuario.APELLIDO }}</h5>
-    <span class="text-muted">{{ fechaActual | date:'fullDate' }} - {{ horaActual | date:'shortTime' }}</span>
+    <span class="text-muted">
+      {{ fechaActual | date:'fullDate' }} – {{ horaActual | date:'shortTime' }}
+    </span>
   </div>
 
   <div class="chat-body">
-    <!-- Lista de chats (amigos + grupos juntos) -->
+    <!-- Sidebar: conversaciones -->
     <div class="sidebar">
       <h6>Conversaciones</h6>
-      <div *ngFor="let chat of conversacionesOrdenadas" class="chat-item" (click)="abrirConversacion(chat)">
+      <div
+        *ngFor="let chat of conversacionesOrdenadas"
+        class="chat-item"
+        (click)="abrirConversacion(chat)"
+      >
         <div class="chat-item-header">
           <strong>{{ chat.nombre }}</strong>
-            <small class="text-muted">
-            {{ chat.ultimahora ? (chat.ultimahora | date:'shortTime') : '---' }}
-            </small>
+          <small class="text-muted">
+            {{ chat.ultimahora ? humanizeConversationDate(chat.ultimahora) : '---' }}
+          </small>
         </div>
         <div class="chat-item-preview text-muted">
           {{ chat.ultimomensaje || 'Sin mensajes aún' }}
@@ -22,39 +28,71 @@
       </div>
     </div>
 
-    <!-- Chat activo -->
+    <!-- Contenido del chat seleccionado -->
     <div class="chat-content">
       <p *ngIf="!chatActivo">Selecciona una conversación</p>
       <div *ngIf="chatActivo" class="chat-box">
-    <!-- Cabecera del chat -->
-    <div class="chat-header-active">
-        <strong>{{ chatActivo.nombre }}</strong>
-    </div>
-
-    <!-- Mensajes -->
-    <div class="chat-messages">
-        <div *ngFor="let msg of chatActivo.mensajes"
-     class="mensaje"
-     [class.propietario]="msg.propio">
-        <div *ngIf="chatActivo.tipo === 'grupo'" class="cabecera">
-          <small>{{ msg.emisor }}</small>
+        <!-- Título del chat -->
+        <div class="chat-header-active">
+          <strong>{{ chatActivo.nombre }}</strong>
         </div>
 
-        <div class="contenido">{{ msg.contenido }}</div>
-        <div class="meta">
-          <small>{{ msg.fecha | date:'shortTime' }}</small>
+        <!-- Mensajes con separadores de fecha -->
+        <div #chatMessages class="chat-messages">
+          <ng-container *ngFor="let msg of chatActivo.mensajes; let i = index">
+            <!-- separador cuando cambia el día -->
+            <div
+              *ngIf="i === 0 || !isSameDay(msg.fecha, chatActivo.mensajes[i - 1].fecha)"
+              class="date-separator"
+            >
+              {{ humanizeDate(msg.fecha) }}
+            </div>
+
+            <!-- burbuja de mensaje con respuesta -->
+            <div [ngClass]="{'mensaje-wrapper': true, 'derecha': msg.propio, 'izquierda': !msg.propio}">
+              <div  class="mensaje" [class.propietario]="msg.propio" (contextmenu)="abrirMenuContextual($event, msg)">
+
+                
+                <!-- remitente si es grupo -->
+                <ng-container *ngIf="chatActivo.tipo === 'grupo' && !msg.propio">
+                  <div class="cabecera">
+                    <small>{{ msg.remitente }}</small>
+                  </div>
+                </ng-container>
+
+                <!-- Vista del mensaje original si es respuesta -->
+                <div *ngIf="msg.respuestaDe" class="respuesta-preview">
+                  <small class="text-muted">
+                    {{ msg.respuestaDe.autor }}: “{{ msg.respuestaDe.texto.length > 50 ? (msg.respuestaDe.texto | slice:0:50) + '...' : msg.respuestaDe.texto }}”
+                  </small>
+                </div>
+                <div class="contenido-con-meta">
+                  <span class="contenido-texto">{{ msg.contenido }}</span>
+                  <span class="meta">{{ msg.fecha | date:'shortTime' }}</span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Vista previa de mensaje a responder -->
+        <div *ngIf="mensajeSeleccionado" class="respuesta-activa">
+          <span class="text-muted">
+            Respondiendo a: "{{ mensajeSeleccionado.contenido }}"
+          </span>
+          <button (click)="cancelarRespuesta()" class="btn-cancelar">✖</button>
+        </div>
+
+        <!-- input para nuevo mensaje -->
+        <div class="mensaje-input">
+          <textarea
+            [(ngModel)]="nuevoMensaje"
+            placeholder="Escribe un mensaje..."
+            rows="2"
+          ></textarea>
+          <button (click)="enviarMensaje()">Enviar</button>
         </div>
       </div>
-
-    </div>
-
-    <!-- Input para nuevo mensaje -->
-    <div class="chat-input">
-        <input [(ngModel)]="nuevoMensaje" class="form-control" placeholder="Escribe un mensaje..." (keydown.enter)="enviarMensaje()" />
-        <button class="btn btn-success" (click)="enviarMensaje()">Enviar</button>
-    </div>
-    </div>
-
     </div>
   </div>
 </div>

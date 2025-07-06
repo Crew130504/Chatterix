@@ -7,6 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const { getConnection } = require('./db');
 
+
 const app = express();
 const PORT = 3000;
 
@@ -274,7 +275,6 @@ app.get('/api/chat/conversaciones/:idUser', async (req, res) => {
 
 
 
-//Obtener los ultimo 10 mensajes de Usuarios Y Grupos
 app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
   const { tipo, idChat, idUsuario } = req.params;
 
@@ -282,73 +282,99 @@ app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
     const conn = await getConnection();
     let sql, binds;
 
-    /* ────────────── CHAT 1-a-1 ────────────── */
     if (tipo === 'amigo') {
       sql = `
-        SELECT *
-        FROM (
+        SELECT * FROM (
           SELECT
-            m."CONSECUSER"           AS CONSECUSER,
-            m."USE_CONSECUSER"       AS USE_CONSECUSER,
-            m."CONSMENSAJE"          AS CONSMENSAJE,
-            m."FECHAREGMEN"          AS FECHA,
-            NVL(c."LOCALIZACONTENIDO",'') AS TEXTO,
+            m."CONSECUSER",
+            m."USE_CONSECUSER",
+            m."CONSMENSAJE",
+            m."FECHAREGMEN" AS FECHA,
+            m."MEN_CONSECUSER" AS RESP_CONSECUSER,
+            m."MEN_USE_CONSECUSER" AS RESP_USE_CONSECUSER,
+            m."MEN_CONSMENSAJE" AS RESP_CONSMENSAJE,
+            NVL(c."LOCALIZACONTENIDO", '') AS TEXTO,
+            NVL(uresp."NOMBRE" || ' ' || uresp."APELLIDO", '') AS RESPUESTA_REMITENTE,
+            NVL(cresp."LOCALIZACONTENIDO", '') AS RESPUESTA_TEXTO,
             ROW_NUMBER() OVER (ORDER BY m."FECHAREGMEN" DESC) rn
-          FROM   "MENSAJE"   m
-          JOIN   "CONTENIDO" c
-                 ON c."CONSECUSER"      = m."CONSECUSER"
-                AND NVL(c."USE_CONSECUSER",'X')
-                    = NVL(m."USE_CONSECUSER",'X')
-                AND c."CONSMENSAJE"     = m."CONSMENSAJE"
-          WHERE  m."CODGRUPO" IS NULL
-            AND ((m."CONSECUSER" = :user1 AND m."USE_CONSECUSER" = :user2)
-              OR (m."CONSECUSER" = :user2 AND m."USE_CONSECUSER" = :user1))
+          FROM MENSAJE m
+          JOIN CONTENIDO c
+            ON c."CONSECUSER" = m."CONSECUSER"
+           AND NVL(c."USE_CONSECUSER", 'X') = NVL(m."USE_CONSECUSER", 'X')
+           AND c."CONSMENSAJE" = m."CONSMENSAJE"
+          LEFT JOIN MENSAJE mresp
+            ON mresp."CONSECUSER" = m."MEN_CONSECUSER"
+           AND NVL(mresp."USE_CONSECUSER", 'X') = NVL(m."MEN_USE_CONSECUSER", 'X')
+           AND mresp."CONSMENSAJE" = m."MEN_CONSMENSAJE"
+          LEFT JOIN CONTENIDO cresp
+            ON cresp."CONSECUSER" = mresp."CONSECUSER"
+           AND NVL(cresp."USE_CONSECUSER", 'X') = NVL(mresp."USE_CONSECUSER", 'X')
+           AND cresp."CONSMENSAJE" = mresp."CONSMENSAJE"
+          LEFT JOIN "USER" uresp
+            ON uresp."CONSECUSER" = mresp."CONSECUSER"
+          WHERE m."CODGRUPO" IS NULL
+            AND (
+              (m."CONSECUSER" = :user1 AND m."USE_CONSECUSER" = :user2)
+              OR (m."CONSECUSER" = :user2 AND m."USE_CONSECUSER" = :user1)
+            )
         )
         WHERE rn <= 10
         ORDER BY FECHA
       `;
       binds = { user1: idUsuario, user2: idChat };
 
-    /* ────────────── CHAT DE GRUPO ────────────── */
     } else if (tipo === 'grupo') {
-      sql = `
-        SELECT *
-        FROM (
-          SELECT
-            m."CONSECUSER",                           -- id del emisor
-            u."NOMBRE" || ' ' || u."APELLIDO" AS REMITENTE,
-            m."CONSMENSAJE",
-            m."FECHAREGMEN"          AS FECHA,
-            NVL(c."LOCALIZACONTENIDO",'') AS TEXTO,
-            ROW_NUMBER() OVER (ORDER BY m."FECHAREGMEN" DESC) rn
-          FROM   "MENSAJE"   m
-          JOIN   "USER"      u ON u."CONSECUSER" = m."CONSECUSER"
-          JOIN   "CONTENIDO" c ON c."CONSECUSER" = m."CONSECUSER"
-                              AND c."CONSMENSAJE" = m."CONSMENSAJE"
-          WHERE  m."CODGRUPO" = :grupo
-        )
-        WHERE rn <= 10
-        ORDER BY FECHA
-      `;
-      binds = { grupo: idChat };
-
+        sql = `
+          SELECT * FROM (
+            SELECT
+              m."CONSECUSER",
+               m."USE_CONSECUSER",
+              u."NOMBRE" || ' ' || u."APELLIDO" AS REMITENTE,
+              m."CONSMENSAJE",
+              m."FECHAREGMEN" AS FECHA,
+              m."MEN_CONSECUSER" AS RESP_CONSECUSER,
+              m."MEN_USE_CONSECUSER" AS RESP_USE_CONSECUSER,
+              m."MEN_CONSMENSAJE" AS RESP_CONSMENSAJE,
+              NVL(c."LOCALIZACONTENIDO", '') AS TEXTO,
+              uresp."NOMBRE" || ' ' || uresp."APELLIDO" AS RESPUESTA_REMITENTE,
+              cresp."LOCALIZACONTENIDO" AS RESPUESTA_TEXTO,
+              ROW_NUMBER() OVER (ORDER BY m."FECHAREGMEN" DESC) rn
+            FROM MENSAJE m
+            JOIN "USER" u ON u."CONSECUSER" = m."CONSECUSER"
+            JOIN CONTENIDO c
+              ON c."CONSECUSER" = m."CONSECUSER"
+            AND c."CONSMENSAJE" = m."CONSMENSAJE"
+            /* JOINs para obtener mensaje original si es respuesta */
+            LEFT JOIN MENSAJE mresp
+              ON mresp."CONSECUSER" = m."MEN_CONSECUSER"
+            AND NVL(mresp."USE_CONSECUSER", 'X') = NVL(m."MEN_USE_CONSECUSER", 'X')
+            AND mresp."CONSMENSAJE" = m."MEN_CONSMENSAJE"
+            LEFT JOIN CONTENIDO cresp
+              ON cresp."CONSECUSER" = mresp."CONSECUSER"
+            AND cresp."CONSMENSAJE" = mresp."CONSMENSAJE"
+            AND (
+              (cresp."USE_CONSECUSER" IS NULL AND mresp."USE_CONSECUSER" IS NULL)
+              OR cresp."USE_CONSECUSER" = mresp."USE_CONSECUSER"
+            )
+            LEFT JOIN "USER" uresp
+              ON uresp."CONSECUSER" = mresp."CONSECUSER"
+            WHERE m."CODGRUPO" = :grupo
+          )
+          WHERE rn <= 10
+          ORDER BY FECHA
+        `;
+        binds = { grupo: idChat };
     } else {
-      await conn.close();
       return res.status(400).json({ error: 'Tipo no soportado' });
     }
 
-    const result = await conn.execute(sql, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-    await conn.close();
+    const result = await conn.execute(sql, binds, {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    });
 
-    /*  ⬅️ El front recibirá:
-        - CONSECUSER      (id emisor)
-        - USE_CONSECUSER  (solo en amigo)
-        - REMITENTE       (solo en grupo)
-        - CONSMENSAJE
-        - FECHA           (ISO)
-        - TEXTO
-    */
+    await conn.close();
     res.json(result.rows);
+
   } catch (err) {
     console.error('Error al obtener mensajes:', err);
     res.status(500).json({ error: 'Error interno' });
@@ -356,6 +382,74 @@ app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
 });
 
 
+// Enviar mensaje (con soporte para respuesta)
+app.post('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
+  const { tipo, idChat, idUsuario } = req.params;
+  const { texto, respuestaDe } = req.body;
+  const esAmigo = tipo === 'amigo';
+  let conn;
+
+  try {
+    conn = await getConnection();
+
+    const seqSql = esAmigo
+      ? `SELECT NVL(MAX(CONSMENSAJE),0)+1 AS NEXT_ID FROM MENSAJE WHERE CONSECUSER = :sender AND USE_CONSECUSER = :receiver`
+      : `SELECT NVL(MAX(CONSMENSAJE),0)+1 AS NEXT_ID FROM MENSAJE WHERE CODGRUPO = :groupId`;
+
+    const seqBinds = esAmigo
+      ? { sender: idUsuario, receiver: idChat }
+      : { groupId: Number(idChat) };
+
+    const [{ NEXT_ID: nextId }] = (await conn.execute(seqSql, seqBinds, { outFormat: oracledb.OUT_FORMAT_OBJECT })).rows;
+
+    const [menConsec, menUseConsec, menConsmensaje] = respuestaDe || [null, null, null];
+
+    await conn.execute(
+      `INSERT INTO MENSAJE (
+         CONSECUSER, USE_CONSECUSER, CONSMENSAJE, CODGRUPO,
+         MEN_CONSECUSER, MEN_USE_CONSECUSER, MEN_CONSMENSAJE,
+         FECHAREGMEN
+       ) VALUES (
+         :sender, :receiver, :msgId, :groupId,
+         :menConsec, :menUseConsec, :menConsmsg,
+         SYSDATE
+       )`,
+      {
+        sender: idUsuario,
+        receiver: esAmigo ? idChat : idUsuario,
+        msgId: nextId,
+        groupId: esAmigo ? null : Number(idChat),
+        menConsec,
+        menUseConsec,
+        menConsmsg: menConsmensaje
+      }
+    );
+
+    await conn.execute(
+      `INSERT INTO CONTENIDO (
+         CONSECUSER, USE_CONSECUSER, CONSMENSAJE, CONSECONTENIDO,
+         IDTIPOCONTENIDO, IDTIPOARCHIVO, CONTENIDOIMAG, LOCALIZACONTENIDO
+       ) VALUES (
+         :sender, :receiver, :msgId, 1, '2', NULL, EMPTY_BLOB(), :texto
+       )`,
+      {
+        sender: idUsuario,
+        receiver: esAmigo ? idChat : idUsuario,
+        msgId: nextId,
+        texto
+      }
+    );
+
+    await conn.commit();
+    res.status(201).json({ success: true, newMessageId: nextId });
+  } catch (err) {
+    console.error('Error enviando mensaje:', err);
+    if (conn) await conn.rollback();
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
 
 
 // Iniciar servidor

@@ -16,18 +16,42 @@ export class ChatService {
     return this.http.get<any[]>(`${this.apiUrl}/chat/conversaciones/${idUser}`);
   }
 
-  // Obtener últimos mensajes de un chat
-  getMensajes(tipo: string, idChat: string, idUsuario: string) {
-  return this.http.get<any[]>(`http://localhost:3000/api/chat/mensajes/${tipo}/${idChat}/${idUsuario}`);
+  // ✅ Obtener últimos mensajes de un chat
+  getMensajes(tipo: string, idChat: string, idUsuario: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/chat/mensajes/${tipo}/${idChat}/${idUsuario}`);
   }
 
-  // 🔜 Enviar mensaje
-  enviarMensaje(payload: {
-    emisor: string;
-    receptorId: string;
-    tipo: 'amigo' | 'grupo';
-    contenido: string;
-  }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/chat/enviar`, payload);
+  // ✅ Enviar mensaje con posible respuesta (hilo)
+  sendMessage(
+    tipo: 'amigo' | 'grupo',
+    idChat: string,
+    idUsuario: string,
+    texto: string,
+    respuestaDe?: [string, string, number] | null
+  ): Observable<{ success: boolean; newMessageId: number }> {
+    return this.http.post<{ success: boolean; newMessageId: number }>(
+      `${this.apiUrl}/chat/mensajes/${tipo}/${idChat}/${idUsuario}`,
+      { texto, respuestaDe }
+    );
+  }
+
+  // ✅ Subir archivo (imagen o adjunto)
+  subirArchivo(
+    archivo: File,
+    consecUser: string,
+    useConsecUser: string,
+    consMensaje: number,
+    tipoContenido: string,
+    tipoArchivo: string
+  ): Observable<any> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('consecUser', consecUser);
+    formData.append('useConsecUser', useConsecUser);
+    formData.append('consMensaje', consMensaje.toString());
+    formData.append('tipoContenido', tipoContenido);
+    formData.append('tipoArchivo', tipoArchivo);
+
+    return this.http.post(`${this.apiUrl}/subirArchivo`, formData);
   }
 }
