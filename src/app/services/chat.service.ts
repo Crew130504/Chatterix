@@ -3,25 +3,24 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ChatService {
-  private apiUrl = environment.apiUrl;
+  public apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Obtener conversaciones del usuario
   getConversaciones(idUser: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/chat/conversaciones/${idUser}`);
   }
 
-  // ✅ Obtener últimos mensajes de un chat
-  getMensajes(tipo: string, idChat: string, idUsuario: string): Observable<any[]> {
+  getMensajes(
+    tipo: 'amigo' | 'grupo',
+    idChat: string,
+    idUsuario: string
+  ): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/chat/mensajes/${tipo}/${idChat}/${idUsuario}`);
   }
 
-  // ✅ Enviar mensaje con posible respuesta (hilo)
   sendMessage(
     tipo: 'amigo' | 'grupo',
     idChat: string,
@@ -35,7 +34,18 @@ export class ChatService {
     );
   }
 
-  // ✅ Subir archivo (imagen o adjunto)
+  sendMessageWithFile(
+    tipo: 'amigo' | 'grupo',
+    idChat: string,
+    idUsuario: string,
+    formData: FormData
+  ): Observable<{ success: boolean; newMessageId: number }> {
+    return this.http.post<{ success: boolean; newMessageId: number }>(
+      `${this.apiUrl}/chat/mensajes/${tipo}/${idChat}/${idUsuario}`,
+      formData
+    );
+  }
+
   subirArchivo(
     archivo: File,
     consecUser: string,
@@ -53,5 +63,17 @@ export class ChatService {
     formData.append('tipoArchivo', tipoArchivo);
 
     return this.http.post(`${this.apiUrl}/subirArchivo`, formData);
+  }
+
+  /** Construye la URL para descargar un blob de contenido */
+  getArchivoUrl(
+    consecUser: string,
+    useConsecUser: string,
+    consMensaje: number,
+    conseContenido: number
+  ): string {
+    return `${this.apiUrl}/chat/archivo/`
+      + `${consecUser}/${useConsecUser}/`
+      + `${consMensaje}/${conseContenido}`;
   }
 }

@@ -23,7 +23,19 @@
           </small>
         </div>
         <div class="chat-item-preview text-muted">
-          {{ chat.ultimomensaje || 'Sin mensajes aún' }}
+          <ng-container *ngIf="chat.ultimomensaje; else archivoOvacio">
+            {{ chat.ultimomensaje }}
+          </ng-container>
+
+          <ng-template #archivoOvacio>
+            <ng-container *ngIf="chat.ultimotipocontenido === '1'; else sinMensajes">
+              📎 {{ chat.ultimotipoarchivo }}
+            </ng-container>
+          </ng-template>
+
+          <ng-template #sinMensajes>
+            Sin mensajes aún
+          </ng-template>
         </div>
       </div>
     </div>
@@ -49,10 +61,18 @@
             </div>
 
             <!-- burbuja de mensaje con respuesta -->
-            <div [ngClass]="{'mensaje-wrapper': true, 'derecha': msg.propio, 'izquierda': !msg.propio}">
-              <div  class="mensaje" [class.propietario]="msg.propio" (contextmenu)="abrirMenuContextual($event, msg)">
-
-                
+            <div
+              [ngClass]="{
+                'mensaje-wrapper': true,
+                derecha: msg.propio,
+                izquierda: !msg.propio
+              }"
+            >
+              <div
+                class="mensaje"
+                [class.propietario]="msg.propio"
+                (contextmenu)="abrirMenuContextual($event, msg)"
+              >
                 <!-- remitente si es grupo -->
                 <ng-container *ngIf="chatActivo.tipo === 'grupo' && !msg.propio">
                   <div class="cabecera">
@@ -63,13 +83,33 @@
                 <!-- Vista del mensaje original si es respuesta -->
                 <div *ngIf="msg.respuestaDe" class="respuesta-preview">
                   <small class="text-muted">
-                    {{ msg.respuestaDe.autor }}: “{{ msg.respuestaDe.texto.length > 50 ? (msg.respuestaDe.texto | slice:0:50) + '...' : msg.respuestaDe.texto }}”
+                    {{ msg.respuestaDe.autor }}:
+                    “{{ msg.respuestaDe.texto.length > 50
+                      ? (msg.respuestaDe.texto | slice: 0: 50) + '...'
+                      : msg.respuestaDe.texto }}”
                   </small>
                 </div>
-                <div class="contenido-con-meta">
+
+              <div class="contenido-con-meta">
+                <!-- si no es archivo, mostramos el texto -->
+                <ng-container *ngIf="!msg.esArchivo; else archivoTpl">
                   <span class="contenido-texto">{{ msg.contenido }}</span>
-                  <span class="meta">{{ msg.fecha | date:'shortTime' }}</span>
-                </div>
+                </ng-container>
+
+                <!-- si es archivo, mostramos enlace -->
+                <ng-template #archivoTpl>
+                  <a
+                    [href]="msg.archivoUrl"
+                    target="_blank"
+                    class="archivo-link"
+                  >
+                    📎 {{ msg.idTipoArchivo || 'Descargar archivo' }}
+                  </a>
+                </ng-template>
+
+                <!-- hora siempre -->
+                <span class="meta">{{ msg.fecha | date:'shortTime' }}</span>
+              </div>
               </div>
             </div>
           </ng-container>
@@ -83,13 +123,33 @@
           <button (click)="cancelarRespuesta()" class="btn-cancelar">✖</button>
         </div>
 
-        <!-- input para nuevo mensaje -->
+        <!-- input para nuevo mensaje + carga de archivo -->
         <div class="mensaje-input">
           <textarea
             [(ngModel)]="nuevoMensaje"
             placeholder="Escribe un mensaje..."
             rows="2"
           ></textarea>
+
+          <!-- selector de archivo -->
+          <input
+            type="file"
+            (change)="onFileChange($event)"
+          />
+
+          <!-- vista previa del archivo seleccionado -->
+          <div *ngIf="selectedFile" class="file-preview">
+            <small>{{ selectedFile.name }}</small>
+            <button
+              type="button"
+              (click)="selectedFile = null"
+              title="Eliminar archivo"
+              class="btn-cancelar-file"
+            >
+              ✖
+            </button>
+          </div>
+
           <button (click)="enviarMensaje()">Enviar</button>
         </div>
       </div>
