@@ -1,8 +1,8 @@
 # Chatterix – Plataforma social con mensajería en tiempo real y gestión jerárquica de usuarios
 
 **Chatterix** es una aplicación web desarrollada con Angular y Node.js sobre una base de datos Oracle 11g. Permite la creación de una red social con funcionalidades completas de mensajería, administración de usuarios, jerarquía geográfica, configuración de privacidad, contenidos multimedia y pertenencia a grupos.
----
 
+---
 ## 🔧 Tecnologías utilizadas
 
 ### Frontend
