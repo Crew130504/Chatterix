@@ -95,44 +95,60 @@
   color: #666;
 }
 
-
-
 .cabecera small {
   font-weight: 600;
 }
-/* Contenedor del input: blanco suave con sombra */
+
+/* ------- ENTRADA DE MENSAJE ------- */
 .mensaje-input {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 8px;
   background: #ffffff;
   border-top: 1px solid #e0e0e0;
-  box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Área de texto: fondo claro, borde acorde al tema */
-.mensaje-input textarea {
+.mensaje-envio-linea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mensaje-envio-linea textarea {
   flex: 1;
+  height: 60px;
+  max-height: 60px;
+  resize: none;
   padding: 10px 12px;
   font-size: 14px;
   border: 1px solid #b2dfdb;
   border-radius: 6px;
   background: #f9f9f9;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  height: 60px;
-  max-height: 60px;
-  overflow-y: auto;
-  resize: none;
 }
 
-.mensaje-input textarea:focus {
+.mensaje-envio-linea textarea:focus {
   outline: none;
   border-color: #4fc3a1;
   box-shadow: 0 0 5px rgba(79,195,161,0.5);
 }
 
-.mensaje-input button {
-  margin-left: 10px;
+.mensaje-envio-linea .archivo-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.mensaje-envio-linea .archivo-btn:hover {
+  background-color: #0056b3;
+}
+
+.mensaje-envio-linea button {
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
@@ -144,14 +160,54 @@
   transition: background-color 0.2s, transform 0.1s;
 }
 
-
-.mensaje-input button:hover {
+.mensaje-envio-linea button:hover {
   background-color: #43a58f;
 }
 
-.mensaje-input button:active {
+.mensaje-envio-linea button:active {
   transform: scale(0.97);
 }
+
+/* PREVIEW DEL ARCHIVO ARRIBA */
+.archivo-preview-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background-color: #f1f1f1;
+  border: 1px dashed #aaa;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.archivo-nombre {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.archivo-hidden {
+  display: none;
+}
+
+.btn-cancelar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #00796b;
+  padding: 2px 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cancelar:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ------ MENSAJES --------- */
 .mensaje-wrapper {
   display: flex;
   width: 100%;
@@ -223,6 +279,7 @@
 .context-menu button:hover {
   background-color: #f0f0f0;
 }
+
 .respuesta-activa {
   display: flex;
   justify-content: space-between;
@@ -235,24 +292,3 @@
   font-size: 0.9rem;
   color: #00796b;
 }
-
-.btn-cancelar {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #00796b;
-  padding: 2px 8px;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-}
-
-.btn-cancelar:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-.archivo-preview {
-  font-size: 0.8rem;
-  color: #555;
-  margin-top: 4px;
-}
-

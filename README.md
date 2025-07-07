@@ -1,149 +1,111 @@
-# GeoUser – Registro geográfico con verificación por correo
+# Chatterix – Plataforma social con mensajería en tiempo real y gestión jerárquica de usuarios
 
-**GeoUser** es una aplicación web construida con Angular y Node.js que permite registrar usuarios con su ubicación geográfica jerárquica (país → departamento → ciudad → área → provincia). Incluye verificación de correo electrónico mediante envío de código, y almacenamiento de datos en una base de datos Oracle 11g.
-
+**Chatterix** es una aplicación web desarrollada con Angular y Node.js sobre una base de datos Oracle 11g. Permite la creación de una red social con funcionalidades completas de mensajería, administración de usuarios, jerarquía geográfica, configuración de privacidad, contenidos multimedia y pertenencia a grupos.
 ---
 
-## Tecnologías
+## 🔧 Tecnologías utilizadas
 
 ### Frontend
-- Angular 17+ 
-- Bootstrap 5 
+- Angular 17+
+- Bootstrap 5
 - TypeScript
 
 ### Backend
 - Node.js (v18+)
 - Express
-- oracledb (requiere Oracle Instant Client)
-- Nodemailer
+- OracleDB (con Oracle Instant Client)
+- Nodemailer (para verificación por correo)
+- Multer (manejo de archivos en memoria)
 
 ### Base de Datos
 - Oracle Database 11g
-- Modelo jerárquico con las tablas: `TIPOUBICA`, `UBICACION`, `"USER"`
+- Modelo relacional completo con más de 15 tablas, incluyendo relaciones complejas e integridad referencial
 
 ---
 
-## Requisitos previos
+## Módulos implementados
 
-- Node.js `>=18`
-- Angular CLI:
-
-```bash
-npm install -g @angular/cli
-````
-
-* Oracle Database 11g corriendo localmente
-* Oracle Instant Client instalado y agregado al `PATH`
-* Archivo `.env` configurado en el backend:
-
-```env
-ORACLE_CLIENT_PATH=C:\ruta\a\instantclient
-SENDGRID_API_KEY=TU_CLAVE_API
-MAIL_FROM=GeoUser <tu_correo@proveedor.com>
-```
+- Gestión de ubicación geográfica (jerarquía país → provincia)
+- Registro y autenticación de usuarios con verificación por email
+- Sistema de mensajería privada y grupal con soporte para:
+  - Hilos (responder mensajes)
+  - Archivos (PDF, DOC, MP4, etc.)
+  - Imágenes (JPG, PNG, BMP, etc.)
+- Visualización y descarga de contenido multimedia
 
 ---
 
 ## Estructura del proyecto
 
 ```
-GeoUser/
+Chatterix/
 ├── Backend/
 │   ├── db.js
-│   ├── mailer.js
 │   ├── server.js
+│   ├── mailer.js
 │   ├── .env
 │   └── package.json
-├── src/
-│   ├── app/
+├── Frontend/
+│   ├── src/app/
 │   │   ├── services/
-│   │   ├── pages/
-│   │   │   ├── home/
-│   │   │   └── register-user/
-│   ├── assets/
-│   └── styles.css
-└── angular.json
+│   │   ├── components/
+│   │   └── pages/
+│   │       ├── home/
+│   │       ├── chat/
+│   │       ├── login /
+│   │       └── register-user/
+└── Documentacion/
+    ├── CONSULTAS MODULO.sql
+    ├── script_Modulo_1.sql
+    ├── Diagrama Power Designer.pdm
+    └── modelo_relacional.pdf
 ```
 
 ---
 
-## Ejecución del proyecto
+## Requisitos
+
+- Node.js `>=18`
+- Angular CLI
+  ```bash
+  npm install -g @angular/cli
+  ```
+- Oracle 11g corriendo en local con el servicio `XE`
+- Oracle Instant Client agregado al PATH
+- Archivo `.env` con credenciales SMTP y Oracle
+
+---
+
+## Instrucciones de ejecución
 
 ### Backend
-
-1. Instala las dependencias:
 
 ```bash
 cd Backend
 npm install
-```
-
-2. Ejecuta el servidor:
-
-```bash
 node server.js
 ```
 
 El backend escuchará en: `http://localhost:3000`
 
-> Nota: El archivo `db.js` utiliza la cadena de conexión:
-> `connectString: 'localhost:1521/XE'`
-
 ### Frontend
 
-1. Instala las dependencias:
-
 ```bash
+cd Frontend
 npm install
-```
-
-2. Ejecuta el proyecto:
-
-```bash
 ng serve
 ```
 
-Accede desde el navegador en: `http://localhost:4200`
+La aplicación estará disponible en: `http://localhost:4200`
 
 ---
 
-## Funcionalidades principales
-
-* Registro de usuarios con formulario reactivo
-* Selección jerárquica de ubicación: país → departamento → ciudad → área → provincia
-* Validación de correo electrónico mediante código (SendGrid)
-* Inserción de datos en tabla `"USER"` de Oracle
-* Soporte jerárquico mediante la columna `UBICA_SUP`
-* Manejo correcto de caracteres UTF-8 (tildes, ñ, etc.)
-
----
-
-## Pruebas y validaciones
-
-* Puedes usar los scripts `INSERT` incluidos para cargar datos de prueba en Oracle.
-* Para verificar ubicaciones hijas:
-
-```sql
-SELECT * FROM "UBICACION" WHERE "UBICA_SUP" = 'cod_padre';
-```
-
----
-
-## Configuración de Oracle UTF-8
-
-Antes de ejecutar la base de datos, asegúrate de establecer el entorno en UTF-8 para evitar errores de codificación Unicode. En la terminal (CMD):
+## Configuración Oracle UTF-8
 
 ```bash
 chcp 65001
 set NLS_LANG=.AL32UTF8
-sqlplus tu_usuario/tu_contraseña@tu_conexion
+sqlplus interfaz/123@localhost:1521/XE
 ```
 
 ---
-
-## Notas finales
-
-* Oracle debe estar corriendo localmente en `localhost:1521` con el servicio `XE`.
-* El usuario de la base de datos debe llamarse `INTERFAZ` con contraseña `123` (puedes modificar esto en la conexión del backend).
-* Asegúrate de tener configurado correctamente `ORACLE_CLIENT_PATH` y que SendGrid tenga permisos para enviar correos.
-

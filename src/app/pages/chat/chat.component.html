@@ -1,5 +1,5 @@
 <div class="chat-container">
-  <!-- Cabecera general -->
+  <!-- Cabecera general: nombre de usuario y hora actual -->
   <div class="chat-header">
     <h5>Bienvenido, {{ usuario.NOMBRE }} {{ usuario.APELLIDO }}</h5>
     <span class="text-muted">
@@ -8,9 +8,11 @@
   </div>
 
   <div class="chat-body">
-    <!-- Sidebar: conversaciones -->
+    <!-- Sidebar: lista de conversaciones -->
     <div class="sidebar">
       <h6>Conversaciones</h6>
+
+      <!-- Itera sobre cada conversación -->
       <div
         *ngFor="let chat of conversacionesOrdenadas"
         class="chat-item"
@@ -22,6 +24,8 @@
             {{ chat.ultimahora ? humanizeConversationDate(chat.ultimahora) : '---' }}
           </small>
         </div>
+
+        <!-- Muestra último mensaje o tipo de archivo -->
         <div class="chat-item-preview text-muted">
           <ng-container *ngIf="chat.ultimomensaje; else archivoOvacio">
             {{ chat.ultimomensaje }}
@@ -40,19 +44,21 @@
       </div>
     </div>
 
-    <!-- Contenido del chat seleccionado -->
+    <!-- Panel del chat seleccionado -->
     <div class="chat-content">
+      <!-- Mensaje cuando no se ha seleccionado conversación -->
       <p *ngIf="!chatActivo">Selecciona una conversación</p>
+
       <div *ngIf="chatActivo" class="chat-box">
-        <!-- Título del chat -->
+        <!-- Encabezado del chat activo -->
         <div class="chat-header-active">
           <strong>{{ chatActivo.nombre }}</strong>
         </div>
 
-        <!-- Mensajes con separadores de fecha -->
+        <!-- Lista de mensajes -->
         <div #chatMessages class="chat-messages">
           <ng-container *ngFor="let msg of chatActivo.mensajes; let i = index">
-            <!-- separador cuando cambia el día -->
+            <!-- Separador si cambia el día entre mensajes -->
             <div
               *ngIf="i === 0 || !isSameDay(msg.fecha, chatActivo.mensajes[i - 1].fecha)"
               class="date-separator"
@@ -60,7 +66,7 @@
               {{ humanizeDate(msg.fecha) }}
             </div>
 
-            <!-- burbuja de mensaje con respuesta -->
+            <!-- Burbuja de mensaje -->
             <div
               [ngClass]="{
                 'mensaje-wrapper': true,
@@ -73,14 +79,14 @@
                 [class.propietario]="msg.propio"
                 (contextmenu)="abrirMenuContextual($event, msg)"
               >
-                <!-- remitente si es grupo -->
+                <!-- Remitente visible solo en grupo -->
                 <ng-container *ngIf="chatActivo.tipo === 'grupo' && !msg.propio">
                   <div class="cabecera">
                     <small>{{ msg.remitente }}</small>
                   </div>
                 </ng-container>
 
-                <!-- Vista del mensaje original si es respuesta -->
+                <!-- Vista previa del mensaje original si es respuesta -->
                 <div *ngIf="msg.respuestaDe" class="respuesta-preview">
                   <small class="text-muted">
                     {{ msg.respuestaDe.autor }}:
@@ -90,67 +96,83 @@
                   </small>
                 </div>
 
-              <div class="contenido-con-meta">
-                <!-- si no es archivo, mostramos el texto -->
-                <ng-container *ngIf="!msg.esArchivo; else archivoTpl">
-                  <span class="contenido-texto">{{ msg.contenido }}</span>
-                </ng-container>
+                <!-- Contenido del mensaje y metadata -->
+                <div class="contenido-con-meta">
+                  <!-- Si es texto -->
+                  <ng-container *ngIf="!msg.esArchivo; else archivoTpl">
+                    <span class="contenido-texto">{{ msg.contenido }}</span>
+                  </ng-container>
 
-                <!-- si es archivo, mostramos enlace -->
-                <ng-template #archivoTpl>
-                  <a
-                    [href]="msg.archivoUrl"
-                    target="_blank"
-                    class="archivo-link"
-                  >
-                    📎 {{ msg.idTipoArchivo || 'Descargar archivo' }}
-                  </a>
-                </ng-template>
+                  <!-- Si es archivo -->
+                  <ng-template #archivoTpl>
+                    <a
+                      [href]="msg.archivoUrl"
+                      target="_blank"
+                      class="archivo-link"
+                    >
+                      📎 {{ msg.idTipoArchivo || 'Descargar archivo' }}
+                    </a>
+                  </ng-template>
 
-                <!-- hora siempre -->
-                <span class="meta">{{ msg.fecha | date:'shortTime' }}</span>
-              </div>
+                  <!-- Hora del mensaje -->
+                  <span class="meta">{{ msg.fecha | date:'shortTime' }}</span>
+                </div>
               </div>
             </div>
           </ng-container>
         </div>
 
-        <!-- Vista previa de mensaje a responder -->
+        <!-- Sección de respuesta activa (si se seleccionó un mensaje para responder) -->
         <div *ngIf="mensajeSeleccionado" class="respuesta-activa">
           <span class="text-muted">
-            Respondiendo a: "{{ mensajeSeleccionado.contenido }}"
+            Respondiendo a:
+            <ng-container *ngIf="mensajeSeleccionado.contenido?.trim(); else archivoRespuesta">
+              "{{ mensajeSeleccionado.contenido }}"
+            </ng-container>
+            <ng-template #archivoRespuesta>
+              [Archivo adjunto: {{ mensajeSeleccionado.idTipoArchivo || 'Archivo' }}]
+            </ng-template>
           </span>
           <button (click)="cancelarRespuesta()" class="btn-cancelar">✖</button>
         </div>
 
-        <!-- input para nuevo mensaje + carga de archivo -->
+        <!-- Input para nuevo mensaje -->
         <div class="mensaje-input">
-          <textarea
-            [(ngModel)]="nuevoMensaje"
-            placeholder="Escribe un mensaje..."
-            rows="2"
-          ></textarea>
-
-          <!-- selector de archivo -->
-          <input
-            type="file"
-            (change)="onFileChange($event)"
-          />
-
-          <!-- vista previa del archivo seleccionado -->
-          <div *ngIf="selectedFile" class="file-preview">
-            <small>{{ selectedFile.name }}</small>
+          <!-- Vista previa del archivo seleccionado -->
+          <div *ngIf="selectedFile" class="archivo-preview-barra">
+            <span class="archivo-nombre">{{ selectedFile.name }}</span>
             <button
               type="button"
               (click)="selectedFile = null"
               title="Eliminar archivo"
-              class="btn-cancelar-file"
+              class="btn-cancelar"
             >
               ✖
             </button>
           </div>
 
-          <button (click)="enviarMensaje()">Enviar</button>
+          <!-- Textarea + botón archivo + enviar -->
+          <div class="mensaje-envio-linea">
+            <!-- Botón para seleccionar archivo -->
+            <label for="fileInput" class="archivo-btn">📎</label>
+            <input
+              #fileInput
+              type="file"
+              id="fileInput"
+              (change)="onFileChange($event)"
+              class="archivo-hidden"
+            />
+
+            <!-- Campo de texto -->
+            <textarea
+              [(ngModel)]="nuevoMensaje"
+              placeholder="Escribe un mensaje..."
+              rows="2"
+            ></textarea>
+
+            <!-- Botón enviar -->
+            <button (click)="enviarMensaje()">Enviar</button>
+          </div>
         </div>
       </div>
     </div>

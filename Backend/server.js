@@ -1,30 +1,39 @@
-// server.js
+// Variables de entorno
 require('dotenv').config();
+
+// OracleDB y configuración para blobs como buffers
 const oracledb = require('oracledb');
+oracledb.fetchAsBuffer = [oracledb.BLOB];
+
+// Librerías propias y externas
 const { enviarCodigo } = require('./mailer');
-const verificacion = {};
+const { getConnection } = require('./db');
 const express = require('express');
 const cors = require('cors');
-const { getConnection } = require('./db');
 const multer = require('multer');
-oracledb.fetchAsBuffer = [ oracledb.BLOB ];
 
-
+// Variables de control
+const verificacion = {};
 const app = express();
 const PORT = 3000;
-
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Middleware globales
 app.use(cors());
 app.use(express.json());
 
-// Middleware global para forzar charset UTF-8
+// Charset forzado a UTF-8 para evitar problemas con acentos o caracteres especiales
 app.use((req, res, next) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   next();
 });
 
-// Obtener tipos de ubicación
+
+// ---------------------------
+// RUTAS: UBICACIÓN
+// ---------------------------
+
+// Obtener todos los tipos de ubicación
 app.get('/api/tipoubica', async (req, res) => {
   try {
     const conn = await getConnection();
@@ -37,7 +46,7 @@ app.get('/api/tipoubica', async (req, res) => {
   }
 });
 
-// Obtener ubicaciones
+// Obtener todas las ubicaciones disponibles
 app.get('/api/ubicaciones', async (req, res) => {
   try {
     const conn = await getConnection();
@@ -52,7 +61,7 @@ app.get('/api/ubicaciones', async (req, res) => {
   }
 });
 
-// Obtener ubicaciones por tipo
+// Obtener ubicaciones filtradas por tipo
 app.get('/api/ubicaciones/tipo/:tipo', async (req, res) => {
   const tipo = req.params.tipo;
   try {
@@ -69,24 +78,27 @@ app.get('/api/ubicaciones/tipo/:tipo', async (req, res) => {
   }
 });
 
-// Registrar usuario
+
+// ---------------------------
+// RUTA: REGISTRO DE USUARIO
+// ---------------------------
+
+// Registrar un nuevo usuario
 app.post('/api/usuarios', async (req, res) => {
   const idGenerado = Math.floor(10000 + Math.random() * 90000).toString();
 
   const {
-    consecUser, codUbica, nombre, apellido, user,
-    fechaRegistro, email, celular
+    consecUser, codUbica, nombre, apellido,
+    user, fechaRegistro, email, celular
   } = req.body;
 
   try {
     const conn = await getConnection();
 
+    // Verifica si ya existe un usuario con el mismo ID o correo
     const check = await conn.execute(
       `SELECT 1 FROM "USER" WHERE "CONSECUSER" = :id OR "EMAIL" = :mail`,
-      {
-        id: consecUser,
-        mail: email
-      }
+      { id: consecUser, mail: email }
     );
 
     if (check.rows.length > 0) {
@@ -94,10 +106,12 @@ app.post('/api/usuarios', async (req, res) => {
       return res.status(400).json({ error: 'El usuario ya está registrado' });
     }
 
+    // Inserta el nuevo usuario
     await conn.execute(
       `INSERT INTO "USER"
-      ("CONSECUSER", "CODUBICA", "NOMBRE", "APELLIDO", "USER", "FECHAREGISTRO", "EMAIL", "CELULAR")
-      VALUES (:consec, :codu, :nom, :ape, :usr, TO_DATE(:fec, 'YYYY-MM-DD'), :mail, :cel)`,
+        ("CONSECUSER", "CODUBICA", "NOMBRE", "APELLIDO", "USER", "FECHAREGISTRO", "EMAIL", "CELULAR")
+       VALUES
+        (:consec, :codu, :nom, :ape, :usr, TO_DATE(:fec, 'YYYY-MM-DD'), :mail, :cel)`,
       {
         consec: idGenerado,
         codu: codUbica,
@@ -119,11 +133,15 @@ app.post('/api/usuarios', async (req, res) => {
   }
 });
 
-// Validar correo
+// ---------------------------
+// RUTA: VERIFICACION Y LOGIN
+// ---------------------------
+
+// Enviar codigo de verificacion al correo
 app.post('/api/validar-correo', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Correo requerido' });
-
+  //Genera un codigo de 6 digitos
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
   verificacion[email] = codigo;
 
@@ -136,19 +154,19 @@ app.post('/api/validar-correo', async (req, res) => {
   }
 });
 
-// Verificar código
+// Verificar código ingresado por el usuario
 app.post('/api/verificar-codigo', (req, res) => {
   const { email, codigo } = req.body;
   if (verificacion[email] === codigo) {
-    delete verificacion[email];
+    delete verificacion[email];// elimina código usado
     return res.status(200).json({ validado: true });
   }
   res.status(400).json({ validado: false, error: 'Código incorrecto' });
 });
 
-// Verificar si el usuario ya existe
+// Validar si un nombre de usuario ya existe
 app.get('/api/usuarios/existe/:user', async (req, res) => {
-  const username = req.params.user.toUpperCase(); // comparar sin importar mayúsculas
+  const username = req.params.user.toUpperCase(); // comparación case-insensitive
   try {
     const conn = await getConnection();
     const result = await conn.execute(
@@ -163,7 +181,7 @@ app.get('/api/usuarios/existe/:user', async (req, res) => {
   }
 });
 
-//Login con correo
+// Login básico usando solo el correo
 app.post('/api/login', async (req, res) => {
   const { email } = req.body;
 
@@ -182,14 +200,16 @@ app.post('/api/login', async (req, res) => {
       return res.status(404).json({ error: 'Correo no registrado' });
     }
 
-    res.json(result.rows[0]); // devuelve el usuario
+    res.json(result.rows[0]); // Devuelve datos del usuario autenticado
   } catch (err) {
     console.error('Error en login:', err.message);
     res.status(500).json({ error: 'Error al procesar login' });
   }
 });
 
-// server.js o routes/chat.js
+// ---------------------------
+// RUTA: Conversaciones del usuario (amigos y grupos)
+// ---------------------------
 app.get('/api/chat/conversaciones/:idUser', async (req, res) => {
   const { idUser } = req.params;
   try {
@@ -272,7 +292,7 @@ app.get('/api/chat/conversaciones/:idUser', async (req, res) => {
 `, [idUser]);
 
     await conn.close();
-    // JSON salen ahora: tipo,id,nombre,ultimaHora,ultimoMensaje,ultimoTipoContenido,ultimoTipoArchivo
+    // Normaliza las columnas a formato lowercase
     const cols = result.metaData.map(c => c.name.toLowerCase());
     const datos = result.rows.map(r =>
       Object.fromEntries(cols.map((c,i) => [c, r[i]]))
@@ -285,15 +305,16 @@ app.get('/api/chat/conversaciones/:idUser', async (req, res) => {
   }
 });
 
-
-
+// ---------------------------
+// RUTA: Obtener mensajes recientes (últimos 10) de una conversación
+// ---------------------------
 
 app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
   const { tipo, idChat, idUsuario } = req.params;
   try {
     const conn = await getConnection();
     let sql, binds;
-
+    // Consulta detallada para mensajes entre amigos
     if (tipo === 'amigo') {
       sql = `
         SELECT * FROM (
@@ -311,6 +332,7 @@ app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
             c."CONSECONTENIDO"                AS CONSECONTENIDO,
             NVL(uresp."NOMBRE"||' '||uresp."APELLIDO", '') AS RESPUESTA_REMITENTE,
             NVL(cresp."LOCALIZACONTENIDO", '') AS RESPUESTA_TEXTO,
+            NVL(cresp."IDTIPOARCHIVO", '') AS RESPUESTA_TIPOARCHIVO,
             ROW_NUMBER() OVER (ORDER BY m."FECHAREGMEN" DESC) rn
           FROM MENSAJE m
           JOIN CONTENIDO c
@@ -338,7 +360,7 @@ app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
       `;
       binds = { user1: idUsuario, user2: idChat };
 
-    } else if (tipo === 'grupo') {
+    } else if (tipo === 'grupo') {// Consulta detallada para mensajes en grupo
       sql = `
         SELECT * FROM (
           SELECT
@@ -356,6 +378,7 @@ app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
             c."CONSECONTENIDO"                 AS CONSECONTENIDO,
             NVL(uresp."NOMBRE"||' '||uresp."APELLIDO", '') AS RESPUESTA_REMITENTE,
             NVL(cresp."LOCALIZACONTENIDO", '') AS RESPUESTA_TEXTO,
+            NVL(cresp."IDTIPOARCHIVO", '') AS RESPUESTA_TIPOARCHIVO,
             ROW_NUMBER() OVER (ORDER BY m."FECHAREGMEN" DESC) rn
           FROM MENSAJE m
           JOIN "USER" u
@@ -397,18 +420,25 @@ app.get('/api/chat/mensajes/:tipo/:idChat/:idUsuario', async (req, res) => {
   }
 });
 
-
+// ---------------------------
+// RUTA: Enviar mensaje (texto y/o archivo)
+// ---------------------------
 app.post(
   '/api/chat/mensajes/:tipo/:idChat/:idUsuario',
   upload.single('file'),
   async (req, res) => {
     const { tipo, idChat, idUsuario } = req.params;
-    const { texto, respuestaDe } = req.body;
+    let { texto, respuestaDe } = req.body;
+    // Parsear datos de respuesta si vienen como string
+    if (typeof respuestaDe === 'string') {
+      try {
+        respuestaDe = JSON.parse(respuestaDe);
+      } catch (e) {
+        respuestaDe = null;
+      }
+    }
+    const [menConsec, menUseConsec, menConsmensaje] = respuestaDe || [null, null, null];
     const file = req.file; // si hay archivo, multer lo coloca aquí
-    console.log('[DEBUG] Tipo:', tipo);
-    console.log('[DEBUG] Texto recibido:', texto);
-    console.log('[DEBUG] Archivo recibido:', file);
-
     const esAmigo = tipo === 'amigo';
     let conn;
 
@@ -432,7 +462,6 @@ app.post(
         outFormat: oracledb.OUT_FORMAT_OBJECT
       });
       const nextId = seqResult.rows[0].NEXT_ID;
-      console.log('[DEBUG] nextId mensaje:', nextId);
 
       // 2) Insertar en MENSAJE
       const [menConsec, menUseConsec, menConsmensaje] = respuestaDe || [null, null, null];
@@ -456,8 +485,6 @@ app.post(
           menConsmsg: menConsmensaje
         }
       );
-      console.log('[DEBUG] Mensaje insertado en MENSAJE');
-
       // 3) Preparar contenidos (texto y/o archivo)
       const contenidos = [];
       let contentId = 1;
@@ -465,7 +492,7 @@ app.post(
       if (texto) {
         contenidos.push({
           conseContenido: contentId++,
-          idTipoContenido: '2', // ej. '2' = texto
+          idTipoContenido: '2',
           idTipoArchivo: null,
           buffer: null,
           local: texto
@@ -473,22 +500,19 @@ app.post(
       }
 
       if (file) {
-        // determina el IDTIPOARCHIVO según file.mimetype o file.originalname
-        // aquí un ejemplo simplificado:
         const ext = file.originalname.split('.').pop().toLowerCase();
         let idTipoArchivo = null;
+        // Mapeo simple de extensiones a tipos definidos en la base
         switch (ext) {
-          case 'png': idTipoArchivo = 'GIF'; break;
-          case 'jpg':
-          case 'jpeg': idTipoArchivo = 'BMP'; break;
+          case 'png': idTipoArchivo = 'PNG'; break;
+          case 'jpg': idTipoArchivo = 'JPG'; break;
           case 'pdf': idTipoArchivo = 'PDF'; break;
-          // añade más casos según tu catálogo
           default: idTipoArchivo = null;
         }
 
         contenidos.push({
           conseContenido: contentId++,
-          idTipoContenido: '1', // ej. '1' = imagen/archivo
+          idTipoContenido: '1',
           idTipoArchivo,
           buffer: file.buffer,
           local: null
@@ -497,7 +521,6 @@ app.post(
 
       // 4) Insertar cada contenido
       for (const c of contenidos) {
-        console.log('[DEBUG] Insertando contenido:', c);
         await conn.execute(
           `INSERT INTO CONTENIDO (
              CONSECUSER, USE_CONSECUSER, CONSMENSAJE, CONSECONTENIDO,
@@ -529,7 +552,6 @@ app.post(
 
       // 5) Commit una sola vez
       await conn.commit();
-      console.log('[DEBUG] Commit realizado');
 
       res.status(201).json({ success: true, newMessageId: nextId });
     } catch (err) {
@@ -541,7 +563,9 @@ app.post(
     }
   }
 );
-// Descarga de archivo BLOB
+// ---------------------------
+// RUTA: Descargar archivo (BLOB)
+// ---------------------------
 app.get(
   '/api/chat/archivo/:consecUser/:useConsecUser/:msgId/:contId',
   async (req, res) => {
@@ -563,20 +587,34 @@ app.get(
           cont: Number(contId)
         },
         {
-          outFormat: oracledb.OUT_FORMAT_OBJECT
-          // <-- gracias a fetchAsBuffer, CONTENIDOIMAG vendrá como Buffer
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          fetchInfo: {
+            CONTENIDOIMAG: { type: oracledb.BUFFER }
+          }
         }
       );
 
       if (result.rows.length === 0) return res.status(404).end();
 
       const { CONTENIDOIMAG, IDTIPOARCHIVO } = result.rows[0];
-      // Para que el navegador muestre PDF en línea:
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader(
-        'Content-Disposition',
-        `inline; filename="archivo.${IDTIPOARCHIVO.toLowerCase()}"`
-      );
+      if (!CONTENIDOIMAG) return res.status(404).send('Archivo no encontrado');
+
+      // Mapeo básico de extensiones a MIME types
+      const mimeTypes = {
+        pdf: 'application/pdf',
+        png: 'image/png',
+        jpg: 'image/jpg',
+        gif: 'image/gif',
+        bmp: 'image/bmp',
+        txt: 'text/plain'
+      };
+
+      const extension = IDTIPOARCHIVO.toLowerCase();
+      const mimeType = mimeTypes[extension] || 'application/octet-stream';
+
+      // Cabeceras correctas según el tipo
+      res.setHeader('Content-Type', mimeType);
+      res.setHeader('Content-Disposition', `inline; filename="archivo.${extension}"`);
       res.send(CONTENIDOIMAG);
     } catch (err) {
       console.error('Error al enviar archivo:', err);
@@ -586,10 +624,9 @@ app.get(
     }
   }
 );
-
-
-
-// Iniciar servidor
+// ---------------------------
+// INICIO DEL SERVIDOR
+// ---------------------------
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
