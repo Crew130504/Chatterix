@@ -105,7 +105,7 @@ La aplicación estará disponible en: `http://localhost:4200`
 ```bash
 chcp 65001
 set NLS_LANG=.AL32UTF8
-sqlplus interfaz/123@localhost:1521/XE
+sqlplus modulo/123@XE
 ```
 
 ---
